@@ -77,19 +77,12 @@ export const authConfig: NextAuthConfig = {
       if (!user.isActive) return false;
       return true;
     },
-    authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user;
-      const pathname = nextUrl.pathname;
-
-      // 공개 경로는 항상 허용
-      if (
-        !pathname.startsWith("/admin") &&
-        !pathname.startsWith("/mypage")
-      ) {
-        return true;
-      }
-
-      return isLoggedIn;
+    // authorized 콜백은 사용하지 않음
+    // 리다이렉트 로직은 middleware.ts에서 직접 처리
+    authorized() {
+      // 항상 true 반환하여 NextAuth 자체 리다이렉트 방지
+      // 접근 제어는 middleware.ts에서 수동 처리
+      return true;
     },
   },
 };
