@@ -1,50 +1,24 @@
 // 📁 파일 경로: lib/auth.ts
-// NextAuth v5 설정 + RBAC
+// NextAuth v5 전체 설정 (서버 전용 — Node.js 런타임)
+// Prisma adapter, bcryptjs 등 Node.js 모듈 포함
 
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { compare } from "bcryptjs";
 import { db } from "./db";
+import { authConfig } from "./auth.config";
 import type { UserRole } from "@/types";
 
-declare module "next-auth" {
-  interface User {
-    role: UserRole;
-    isActive: boolean;
-  }
-  interface Session {
-    user: {
-      id: string;
-      email: string;
-      name: string | null;
-      role: UserRole;
-      isActive: boolean;
-      image: string | null;
-    };
-  }
-}
-
-declare module "@auth/core/jwt" {
-  interface JWT {
-    role: UserRole;
-    isActive: boolean;
-  }
-}
-
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   adapter: PrismaAdapter(db) as any,
-  session: { strategy: "jwt" },
-  pages: {
-    signIn: "/login",
-  },
   providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }),
+    // authConfig의 providers에서 Credentials만 실제 authorize로 교체
+    ...authConfig.providers.filter(
+      (p) => (p as { type?: string }).type !== "credentials"
+    ),
     Credentials({
       name: "credentials",
       credentials: {
@@ -84,27 +58,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.role = user.role;
-        token.isActive = user.isActive;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.sub!;
-        session.user.role = token.role;
-        session.user.isActive = token.isActive;
-      }
-      return session;
-    },
-    async signIn({ user }) {
-      if (!user.isActive) return false;
-      return true;
-    },
-  },
 });
 
 // ============================================

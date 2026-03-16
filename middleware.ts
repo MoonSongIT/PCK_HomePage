@@ -1,9 +1,13 @@
 // 📁 파일 경로: middleware.ts
-// 라우트 보호 미들웨어
+// 라우트 보호 미들웨어 (Edge 런타임 호환)
+// Node.js 전용 모듈을 import하지 않도록 auth.config.ts만 사용
 
-import { auth } from "@/lib/auth";
+import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
+import { authConfig } from "@/lib/auth.config";
 import type { UserRole } from "@/types";
+
+const { auth } = NextAuth(authConfig);
 
 // 경로별 접근 허용 역할 (구체적 경로 우선)
 const ROUTE_PERMISSIONS: Record<string, UserRole[]> = {
@@ -52,7 +56,6 @@ export default auth((req) => {
       if (pathname.startsWith(path)) {
         const allowedRoles = ROUTE_PERMISSIONS[path];
         if (!allowedRoles.includes(user.role as UserRole)) {
-          // 관리자 페이지 접근 불가 시 대시보드로 리다이렉트
           if (pathname.startsWith("/admin")) {
             return NextResponse.redirect(
               new URL("/admin/dashboard", req.url)
