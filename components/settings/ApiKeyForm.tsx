@@ -52,7 +52,8 @@ export default function ApiKeyForm({
     reset,
     formState: { errors },
   } = useForm<ApiKeyCreateInput>({
-    resolver: zodResolver(apiKeyCreateSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(apiKeyCreateSchema) as any,
     defaultValues: editData
       ? {
           serviceName: editData.serviceName,

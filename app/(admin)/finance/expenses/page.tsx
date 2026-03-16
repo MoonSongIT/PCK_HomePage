@@ -44,7 +44,8 @@ export default function ExpensesPage() {
     reset,
     formState: { errors },
   } = useForm<ExpenseCreateInput>({
-    resolver: zodResolver(expenseCreateSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(expenseCreateSchema) as any,
     defaultValues: {
       title: "",
       amount: 0,
