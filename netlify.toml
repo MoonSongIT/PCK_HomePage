@@ -1,0 +1,20 @@
+# Netlify 배포 설정
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+# 환경변수 (Netlify 대시보드에서 설정)
+[build.environment]
+  NODE_VERSION = "22"
+  NPM_VERSION = "11"
+
+# Next.js 플러그인
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# 리다이렉트 (SPA 폴백)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  conditions = {Role = ["admin"]}
