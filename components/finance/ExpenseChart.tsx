@@ -8,6 +8,7 @@ import {
   ResponsiveContainer,
   Legend,
   Tooltip,
+  type PieLabelRenderProps,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ExpenseByCategoryData } from "@/types";
@@ -42,8 +43,8 @@ export default function ExpenseChart({
               cx="50%"
               cy="50%"
               labelLine={false}
-              label={({ label, percentage }) =>
-                `${label} ${percentage.toFixed(1)}%`
+              label={(props: PieLabelRenderProps) =>
+                `${props.name ?? ""} ${((Number(props.percent) || 0) * 100).toFixed(1)}%`
               }
               outerRadius={120}
               fill="#8884d8"
@@ -58,8 +59,8 @@ export default function ExpenseChart({
               ))}
             </Pie>
             <Tooltip
-              formatter={(value: number) => [
-                `${value.toLocaleString()}원`,
+              formatter={(value) => [
+                `${Number(value).toLocaleString()}원`,
               ]}
               contentStyle={{
                 backgroundColor: "var(--color-surface)",

@@ -47,8 +47,8 @@ export default function DonationChart({
               tick={{ fill: "var(--color-text-secondary)", fontSize: 12 }}
             />
             <Tooltip
-              formatter={(value: number) => [
-                `${value.toLocaleString()}원`,
+              formatter={(value) => [
+                `${Number(value).toLocaleString()}원`,
               ]}
               contentStyle={{
                 backgroundColor: "var(--color-surface)",
