@@ -1,0 +1,63 @@
+/* 📁 파일 경로: app/globals.css */
+@import "tailwindcss";
+
+:root {
+  --color-primary: #2C5F8A;
+  --color-secondary: #4A7C59;
+  --color-accent: #C9A84C;
+  --color-background: #F5F3EF;
+  --color-surface: #FFFFFF;
+  --color-text-primary: #1A2B3C;
+  --color-text-secondary: #4A5568;
+  --color-border: #E2D9CF;
+  --color-danger: #C0392B;
+  --color-success: #27AE60;
+}
+
+[data-theme="dark"] {
+  --color-background: #0F1923;
+  --color-surface: #1A2B3C;
+  --color-text-primary: #EDF2F7;
+  --color-text-secondary: #A0AEC0;
+  --color-border: #2D3748;
+}
+
+@theme inline {
+  --font-sans: var(--font-noto-sans-kr);
+  --font-serif: var(--font-noto-serif-kr);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  font-size: 16px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-serif {
+  font-family: var(--font-serif), serif;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}

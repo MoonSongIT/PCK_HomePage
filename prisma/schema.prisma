@@ -1,0 +1,216 @@
+// 📁 파일 경로: prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  FINANCE
+  MEMBER
+  GUEST
+}
+
+enum DonationStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+enum ExpenseCategory {
+  PEACE_EDUCATION
+  CAMPAIGN
+  INTERNATIONAL
+  OPERATIONS
+  RESERVE
+}
+
+enum ActivityCategory {
+  PEACE_EDUCATION
+  CAMPAIGN
+  INTERNATIONAL
+  PRAYER
+}
+
+// ============================================
+// NextAuth 필수 모델
+// ============================================
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============================================
+// 사용자
+// ============================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String?
+  role          UserRole  @default(MEMBER)
+  isActive      Boolean   @default(true)
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+
+  donations Donation[]
+  accounts  Account[]
+  sessions  Session[]
+}
+
+// ============================================
+// 후원금
+// ============================================
+
+model Donation {
+  id            String         @id @default(cuid())
+  userId        String?
+  user          User?          @relation(fields: [userId], references: [id])
+  donorName     String
+  donorEmail    String
+  amount        Int
+  isRecurring   Boolean        @default(false)
+  paymentMethod String
+  paymentKey    String?
+  orderId       String         @unique
+  status        DonationStatus @default(PENDING)
+  isPublic      Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+// ============================================
+// 지출
+// ============================================
+
+model Expense {
+  id          String          @id @default(cuid())
+  title       String
+  amount      Int
+  category    ExpenseCategory
+  expenseDate DateTime
+  description String?
+  receiptUrl  String?
+  isPublic    Boolean         @default(false)
+  createdById String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+// ============================================
+// API Key 설정
+// ============================================
+
+model ApiKeyConfig {
+  id             String   @id @default(cuid())
+  serviceName    String
+  keyIdentifier  String   @unique
+  encryptedValue String
+  encryptedIv    String
+  encryptedTag   String
+  description    String?
+  isActive       Boolean  @default(true)
+  createdById    String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// ============================================
+// 감사 보고서
+// ============================================
+
+model FinanceReport {
+  id          String   @id @default(cuid())
+  year        Int
+  period      String
+  fileUrl     String
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+// ============================================
+// 활동/게시물
+// ============================================
+
+model Activity {
+  id           String           @id @default(cuid())
+  slug         String           @unique
+  title        String
+  summary      String
+  content      String           @db.Text
+  category     ActivityCategory
+  thumbnailUrl String?
+  isPublished  Boolean          @default(false)
+  createdById  String
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+// ============================================
+// 게시판
+// ============================================
+
+model BoardPost {
+  id        String   @id @default(cuid())
+  boardType String   // "notice" | "free"
+  title     String
+  content   String   @db.Text
+  authorId  String
+  isPinned  Boolean  @default(false)
+  viewCount Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================
+// 일반 설정
+// ============================================
+
+model SiteSetting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String @db.Text
+}
