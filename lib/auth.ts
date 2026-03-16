@@ -4,6 +4,7 @@
 
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { compare } from "bcryptjs";
 import { db } from "./db";
@@ -15,10 +16,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   adapter: PrismaAdapter(db) as any,
   providers: [
-    // authConfig의 providers에서 Credentials만 실제 authorize로 교체
-    ...authConfig.providers.filter(
-      (p) => (p as { type?: string }).type !== "credentials"
-    ),
+    // Google provider는 Node.js 런타임에서만 사용 (환경변수 필요)
+    ...(process.env.GOOGLE_CLIENT_ID
+      ? [
+          Google({
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          }),
+        ]
+      : []),
     Credentials({
       name: "credentials",
       credentials: {

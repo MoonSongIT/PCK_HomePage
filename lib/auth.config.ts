@@ -3,7 +3,6 @@
 // Node.js 전용 모듈(bcryptjs, Prisma 등)을 import하지 않음
 
 import type { NextAuthConfig } from "next-auth";
-import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import type { UserRole } from "@/types";
 
@@ -35,6 +34,7 @@ declare module "@auth/core/jwt" {
  * Edge 런타임에서 사용 가능한 NextAuth 설정
  * - Prisma adapter, bcryptjs 등 Node.js 전용 모듈 미포함
  * - authorize()는 lib/auth.ts에서 별도 정의
+ * - Google provider는 lib/auth.ts에서만 정의 (환경변수 필요)
  */
 export const authConfig: NextAuthConfig = {
   session: { strategy: "jwt" },
@@ -42,10 +42,6 @@ export const authConfig: NextAuthConfig = {
     signIn: "/login",
   },
   providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }),
     // Credentials provider는 여기서는 껍데기만 정의
     // 실제 authorize 로직은 lib/auth.ts에서 override
     Credentials({
@@ -73,8 +69,10 @@ export const authConfig: NextAuthConfig = {
       }
       return session;
     },
+    // signIn 콜백: user.isActive가 undefined일 수 있으므로 안전하게 처리
     async signIn({ user }) {
-      if (!user.isActive) return false;
+      // isActive가 명시적으로 false인 경우만 차단
+      if (user.isActive === false) return false;
       return true;
     },
     // authorized 콜백은 사용하지 않음
